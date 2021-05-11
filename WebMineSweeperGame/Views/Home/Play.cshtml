@@ -1,0 +1,77 @@
+﻿@model MineSweeperAPI.Models.Game
+
+@{
+    ViewData["Title"] = "Play";
+}
+
+<h1>Mine Sweeper</h1>
+
+<div id="mainDiv">
+    <div class="grid-container">
+        @for (int i = 0; i < Model.MineCellCollection.Count(); i++)
+        {
+            if (i % Model.XDimension == 0)
+            {
+            @:</div>
+            @:<div class="grid-container">
+            }
+
+            var cell = Model.MineCellCollection[i];
+
+            if (cell.IsRevealed)
+            {
+                if (cell.IsBomb)
+                {
+                    <div class="mine-cell"><img src="~/images/explosion.png" alt="image" /></div>
+                }
+                else if (cell.NumberOfAdjacentBombs != 0)
+                {
+                    <div class="mine-cell number-cell" style="padding:2px; color:red;">@cell.NumberOfAdjacentBombs</div>
+                }
+                else
+                {
+                    <div class="mine-cell"></div>
+                }
+            }
+            else
+            {
+                <input type="button" id="@cell.ArrayPostion" class="mine-cell" />
+            }
+        }
+    </div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('input:button').click(function ()
+        {
+            var position = $(this).attr("id");
+            var gameId = "@Model.Id";
+            RevealCell(gameId, position);
+        });
+    });
+
+    function RevealCell(gameId, arrayPostion) {
+        alert("regpinh");
+
+        var model = {
+            gameId: gameId,
+            arrayPosition: arrayPostion
+        };
+
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("RevealCell", "Home")',
+            data: model,
+            success: function (result, status, xhr) {
+                $("#mainDiv").html(result);
+            },
+            error: function (xhr, status, error) {
+                $("#mainDiv").html("Result: " + status + " " + error + " " + xhr.status + " " + xhr.statusText)
+            }
+        });
+    }
+
+</script>

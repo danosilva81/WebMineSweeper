@@ -1,0 +1,27 @@
+﻿.grid-container {
+    overflow-y: auto;
+}
+
+.mine-cell {
+    width: 30px;
+    height: 30px;
+    float: left;
+    background: lightgray;
+    margin: 1px;
+}
+
+.mine-cell > img {
+    width: 30px;
+    height: 30px;
+}
+
+.number-cell {
+    padding-top: 2px;
+    padding-left: 10px;
+    color: red;
+    font-size: 13pt;
+    font-weight: bold;
+}
+
+
+
