@@ -15,7 +15,7 @@
         {
             if (cell.IsBomb)
             {
-                <div class="mine-cell"><img src="~/images/explosion.png" alt="image"/></div>
+                <div class="mine-cell"><img src="~/images/explosion.png" alt="image" class="img-bomb"/></div>
             }
             else if (cell.NumberOfAdjacentBombs != 0)
             {
@@ -28,7 +28,7 @@
         }
         else if (cell.MarkedAsBomb)
         {
-            <a class="mine-cell button-cell" id="@cell.ArrayPostion" data-bomb-marked="true"><img src="~/images/flag.png" alt="image" /></a>
+            <a class="mine-cell button-cell" id="@cell.ArrayPostion" data-bomb-marked="true"><img src="~/images/flag.png" alt="image" class="img-flag" /></a>
         }
         else
         {
@@ -57,6 +57,10 @@
                     ActionOverCell(model, "MarkAsBomb");
                     break;
             }
+        });
+
+        $('.button-cell').contextmenu(function () {
+            return false;
         });
     });
 

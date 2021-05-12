@@ -11,7 +11,6 @@
 }
 
 .button-cell {
-    padding: 2px 20px;
     text-decoration: none;
     border: solid 1px;
     background-color: #ababab;
@@ -22,11 +21,16 @@
     background-color: #ffffff;
 }
 
-.mine-cell > img {
+.img-bomb {
     width: 35px;
     height: 35px;
     padding-top: 4px;
     padding-left: 4px;
+}
+
+.img-flag {
+    width: 40px;
+    height: 40px;
 }
 
 .number-cell {
