@@ -1,0 +1,86 @@
+﻿@model MineSweeperAPI.Models.Game
+
+<div class="grid-container">
+    @for (int i = 0; i < Model.MineCellCollection.Count(); i++)
+    {
+        if (i % Model.XDimension == 0 && i != 0)
+        {
+        @:</div>
+        @:<div class="grid-container">
+        }
+
+        var cell = Model.MineCellCollection[i];
+
+        if (cell.IsRevealed)
+        {
+            if (cell.IsBomb)
+            {
+                <div class="mine-cell"><img src="~/images/explosion.png" alt="image"/></div>
+            }
+            else if (cell.NumberOfAdjacentBombs != 0)
+            {
+                <div class="mine-cell number-cell">@cell.NumberOfAdjacentBombs</div>
+            }
+            else
+            {
+                <div class="mine-cell"></div>
+            }
+        }
+        else if (cell.MarkedAsBomb)
+        {
+            <a class="mine-cell button-cell" id="@cell.ArrayPostion"><img src="~/images/flag.png" alt="image" /></a>
+        }
+        else
+        {
+            <a class="mine-cell button-cell" id="@cell.ArrayPostion"></a>
+        }
+    }
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('a').mousedown(function (event) {
+            var position = $(this).attr("id");
+            var gameId = "@Model.Id";
+
+            switch (event.which) {
+                case 1:
+                    ActionOverCell(gameId, position, "RevealCell");
+                    break;
+                case 3:
+                    ActionOverCell(gameId, position, "MarkAsBomb");
+                    break;
+            }
+        });
+    });
+
+    function ActionOverCell(gameId, arrayPostion, action) {
+        var urlAction;
+        switch (action) {
+            case "RevealCell"
+                urlAction = '@Url.Action("RevealCell", "Home")'
+            case "MarkAsBomb"
+                urlAction = '@Url.Action("MarkAsBomb", "Home")'
+        }
+
+        var model = {
+            gameId: gameId,
+            arrayPosition: arrayPostion
+        };
+
+        $.ajax({
+            type: "POST",
+            url: urlAction,
+            data: model,
+            success: function (result, status, xhr) {
+                $("#mainDiv").html(result);
+            },
+            error: function (xhr, status, error) {
+                $("#mainDiv").html("Result: " + status + " " + error + " " + xhr.status + " " + xhr.statusText)
+            }
+        });
+    }
+
+</script>

@@ -17,7 +17,6 @@ namespace WebMineSweeperGame.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-
         private string apiBaseUrl;
 
         public HomeController(ILogger<HomeController> logger, IConfiguration configuration)
@@ -52,7 +51,7 @@ namespace WebMineSweeperGame.Controllers
                     ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
                 }
             }
-            return View(allGames);
+            return View("Index", allGames);
         }
 
         [HttpGet]
@@ -107,7 +106,36 @@ namespace WebMineSweeperGame.Controllers
                     ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
                 }
             }
-            return View("Play", game);
+            return PartialView("_PlayPartialView", game);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> MarkAsBomb(string gameId, int arrayPosition)
+        {
+            var game = new Game();
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri(apiBaseUrl);
+
+                var jsonParams = $"{{\"ArrayPostion\":{arrayPosition} }}";
+                var httpContent = new StringContent(jsonParams, Encoding.UTF8, "application/json");
+
+                var responseTask = client.PutAsync($"MarkCellAsBomb/{gameId}", httpContent);
+                responseTask.Wait();
+
+                var result = responseTask.Result;
+                if (result.IsSuccessStatusCode)
+                {
+                    var jsonString = await result.Content.ReadAsStringAsync();
+                    game = JsonConvert.DeserializeObject<Game>(jsonString);
+                }
+                else //web api sent error response 
+                {
+                    //log response status here..
+                    ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                }
+            }
+            return PartialView("_PlayPartialView", game);
         }
 
         public IActionResult Create()
@@ -141,27 +169,26 @@ namespace WebMineSweeperGame.Controllers
                     ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
                 }
             }
-            return RedirectToAction("IndexAsync");
+            return RedirectToAction("Index");
         }
 
-        [HttpPost, ActionName("Delete")]
-        public async Task<IActionResult> DeleteConfirmed(string gameId)
+        [HttpGet, ActionName("Delete")]
+        public async Task<IActionResult> Delete(string id)
         {
             using (var client = new HttpClient())
             {
                 client.BaseAddress = new Uri(apiBaseUrl);
 
-                var responseTask = client.DeleteAsync($"DeleteGame/{gameId}");
-                responseTask.Wait();
+                var taskResult = await client.DeleteAsync($"DeleteGame/{id}");
 
-                var result = responseTask.Result;
-                if (!result.IsSuccessStatusCode)                
+                if (!taskResult.IsSuccessStatusCode)                
                 {
                     //log response status here..
                     ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                    return View("Index");
                 }
             }
-            return RedirectToAction("IndexAsync");
+            return RedirectToAction("Index");
         }
 
 

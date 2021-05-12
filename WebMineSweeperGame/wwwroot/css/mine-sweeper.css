@@ -3,23 +3,37 @@
 }
 
 .mine-cell {
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
     float: left;
     background: lightgray;
     margin: 1px;
 }
 
+.button-cell {
+    padding: 2px 20px;
+    text-decoration: none;
+    border: solid 1px;
+    background-color: #ababab;
+}
+
+.button-cell:hover {
+    border: solid 1px Black;
+    background-color: #ffffff;
+}
+
 .mine-cell > img {
-    width: 30px;
-    height: 30px;
+    width: 35px;
+    height: 35px;
+    padding-top: 4px;
+    padding-left: 4px;
 }
 
 .number-cell {
-    padding-top: 2px;
-    padding-left: 10px;
+    padding-top: 5px;
+    padding-left: 14px;
     color: red;
-    font-size: 13pt;
+    font-size: 15pt;
     font-weight: bold;
 }
 
