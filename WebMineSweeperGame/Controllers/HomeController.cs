@@ -110,14 +110,15 @@ namespace WebMineSweeperGame.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> MarkAsBomb(string gameId, int arrayPosition)
+        public async Task<IActionResult> MarkAsBomb(string gameId, int arrayPosition, bool markedAsBomb)
         {
             var game = new Game();
             using (var client = new HttpClient())
             {
                 client.BaseAddress = new Uri(apiBaseUrl);
 
-                var jsonParams = $"{{\"ArrayPostion\":{arrayPosition} }}";
+                var cellParam = new Cell() { ArrayPostion = arrayPosition, MarkedAsBomb = markedAsBomb };
+                var jsonParams = JsonConvert.SerializeObject(cellParam);
                 var httpContent = new StringContent(jsonParams, Encoding.UTF8, "application/json");
 
                 var responseTask = client.PutAsync($"MarkCellAsBomb/{gameId}", httpContent);

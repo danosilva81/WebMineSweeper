@@ -28,11 +28,11 @@
         }
         else if (cell.MarkedAsBomb)
         {
-            <a class="mine-cell button-cell" id="@cell.ArrayPostion"><img src="~/images/flag.png" alt="image" /></a>
+            <a class="mine-cell button-cell" id="@cell.ArrayPostion" data-bomb-marked="true"><img src="~/images/flag.png" alt="image" /></a>
         }
         else
         {
-            <a class="mine-cell button-cell" id="@cell.ArrayPostion"></a>
+            <a class="mine-cell button-cell" id="@cell.ArrayPostion" data-bomb-marked="false"></a>
         }
     }
 </div>
@@ -41,34 +41,35 @@
 
 <script>
     $(document).ready(function () {
-        $('a').mousedown(function (event) {
-            var position = $(this).attr("id");
-            var gameId = "@Model.Id";
+        $('.button-cell').mousedown(function (event) { 
+            
+            var model = {
+                gameId:  "@Model.Id",
+                arrayPosition: $(this).attr("id"),
+                markedAsBomb: $(this).data("bomb-marked")
+            };
 
             switch (event.which) {
                 case 1:
-                    ActionOverCell(gameId, position, "RevealCell");
+                    ActionOverCell(model, "RevealCell");
                     break;
                 case 3:
-                    ActionOverCell(gameId, position, "MarkAsBomb");
+                    ActionOverCell(model, "MarkAsBomb");
                     break;
             }
         });
     });
 
-    function ActionOverCell(gameId, arrayPostion, action) {
+    function ActionOverCell(model, action) {
         var urlAction;
         switch (action) {
-            case "RevealCell"
-                urlAction = '@Url.Action("RevealCell", "Home")'
-            case "MarkAsBomb"
-                urlAction = '@Url.Action("MarkAsBomb", "Home")'
+            case "RevealCell":
+                urlAction = '@Url.Action("RevealCell", "Home")';
+                break;
+            case "MarkAsBomb":
+                urlAction = '@Url.Action("MarkAsBomb", "Home")';
+                break;
         }
-
-        var model = {
-            gameId: gameId,
-            arrayPosition: arrayPostion
-        };
 
         $.ajax({
             type: "POST",
