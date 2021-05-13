@@ -13,6 +13,8 @@ namespace MineSweeperAPI.Models
 
         public bool IsBomb { get; set; }
 
+        public bool Exploded { get; set; }
+
         public bool MarkedAsBomb { get; set; }
 
         public bool MarkedAsQuestion { get; set; }

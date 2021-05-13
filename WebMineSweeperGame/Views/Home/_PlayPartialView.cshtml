@@ -13,9 +13,13 @@
 
         if (cell.IsRevealed)
         {
-            if (cell.IsBomb)
+            if (cell.Exploded) 
             {
-                <div class="mine-cell"><img src="~/images/explosion.png" alt="image" class="img-bomb"/></div>
+              <div class="mine-cell"><img src="~/images/explosion.png" alt="image" class="img-bomb" /></div>
+            }
+            else if (cell.IsBomb)
+            {
+                <div class="mine-cell"><img src="~/images/bomb.png" alt="image" class="img-bomb"/></div>
             }
             else if (cell.NumberOfAdjacentBombs != 0)
             {
