@@ -1,52 +1,63 @@
 ﻿@model MineSweeperAPI.Models.Game
 
-<div class="grid-container">
-    @for (int i = 0; i < Model.MineCellCollection.Count(); i++)
-    {
-        if (i % Model.XDimension == 0 && i != 0)
-        {
-        @:</div>
-        @:<div class="grid-container">
-        }
+<div class="row">
+    <div class="col-md-8">
+        <div class="grid-container">
+            @for (int i = 0; i < Model.MineCellCollection.Count(); i++)
+            {
+                if (i % Model.XDimension == 0 && i != 0)
+                {
+                @:</div>
+                @:<div class="grid-container">
+                }
 
-        var cell = Model.MineCellCollection[i];
+                var cell = Model.MineCellCollection[i];
 
-        if (cell.IsRevealed)
+                if (cell.IsRevealed)
+                {
+                    if (cell.Exploded)
+                    {
+                        <div class="mine-cell"><img src="~/images/explosion.png" alt="image" class="img-bomb" /></div>
+                    }
+                    else if (cell.IsBomb)
+                    {
+                        <div class="mine-cell"><img src="~/images/bomb.png" alt="image" class="img-bomb" /></div>
+                    }
+                    else if (cell.NumberOfAdjacentBombs != 0)
+                    {
+                        <div class="mine-cell number-cell">@cell.NumberOfAdjacentBombs</div>
+                    }
+                    else
+                    {
+                        <div class="mine-cell"></div>
+                    }
+                }
+                else if (cell.MarkedAsBomb)
+                {
+                    <a class="mine-cell button-cell" id="@cell.ArrayPostion" data-bomb-marked="true"><img src="~/images/flag.png" alt="image" class="img-flag" /></a>
+                }
+                else
+                {
+                    <a class="mine-cell button-cell" id="@cell.ArrayPostion" data-bomb-marked="false"></a>
+                }
+            }
+        </div>
+    </div>
+    <div class="col-md-4">
+        @if (Model.GameIsWon)
         {
-            if (cell.Exploded) 
-            {
-              <div class="mine-cell"><img src="~/images/explosion.png" alt="image" class="img-bomb" /></div>
-            }
-            else if (cell.IsBomb)
-            {
-                <div class="mine-cell"><img src="~/images/bomb.png" alt="image" class="img-bomb"/></div>
-            }
-            else if (cell.NumberOfAdjacentBombs != 0)
-            {
-                <div class="mine-cell number-cell">@cell.NumberOfAdjacentBombs</div>
-            }
-            else
-            {
-                <div class="mine-cell"></div>
-            }
+            <div><img src="~/images/youWin.jpg" /></div>
         }
-        else if (cell.MarkedAsBomb)
-        {
-            <a class="mine-cell button-cell" id="@cell.ArrayPostion" data-bomb-marked="true"><img src="~/images/flag.png" alt="image" class="img-flag" /></a>
-        }
-        else
-        {
-            <a class="mine-cell button-cell" id="@cell.ArrayPostion" data-bomb-marked="false"></a>
-        }
-    }
+    </div>
 </div>
+
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 
 <script>
     $(document).ready(function () {
-        $('.button-cell').mousedown(function (event) { 
-            
+        $('.button-cell').mousedown(function (event) {
+
             var model = {
                 gameId:  "@Model.Id",
                 arrayPosition: $(this).attr("id")

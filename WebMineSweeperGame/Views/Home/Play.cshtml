@@ -6,12 +6,16 @@
 
 <h1>GAME:</h1>
 
+<div>
+    <a href='@Url.Action("ResetGame", "Home", new { gameId = Model.Id })' id="resetBtn" class="btn bg-success mr-1">RESET GAME</a>
+</div>
+
 <div id="mainDiv" style="margin: 20px;">
     <partial name="_PlayPartialView" />
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Index" class="btn bg-primary mr-1">Back to List</a>
 </div>
 
 

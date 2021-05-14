@@ -109,6 +109,32 @@ namespace WebMineSweeperGame.Controllers
             return PartialView("_PlayPartialView", game);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> ResetGame(string gameId)
+        {
+            var game = new Game();
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri(apiBaseUrl);
+
+                var responseTask = client.GetAsync($"ResetGame/{gameId}");
+                responseTask.Wait();
+
+                var result = responseTask.Result;
+                if (result.IsSuccessStatusCode)
+                {
+                    var jsonString = await result.Content.ReadAsStringAsync();
+                    game = JsonConvert.DeserializeObject<Game>(jsonString);
+                }
+                else //web api sent error response 
+                {
+                    //log response status here..
+                    ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                }
+            }
+            return View("Play", game);
+        }
+
         [HttpPost]
         public async Task<IActionResult> MarkAsBomb(string gameId, int arrayPosition, bool markedAsBomb)
         {
@@ -168,9 +194,10 @@ namespace WebMineSweeperGame.Controllers
                 {
                     //log response status here..
                     ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                    return View(gameParam);
                 }
             }
-            return RedirectToAction("Index");
+            return RedirectToAction("Play", new { id = game.Id });
         }
 
         [HttpGet, ActionName("Delete")]

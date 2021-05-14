@@ -22,5 +22,8 @@ namespace MineSweeperAPI.Models
 
         [Display(Name = "Game is Over")]
         public bool GameIsOver { get; set; }
+
+        [Display(Name = "Game is Won")]
+        public bool GameIsWon { get; set; }
     }
 }
