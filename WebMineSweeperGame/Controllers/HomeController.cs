@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using WebMineSweeperGame.ApiClient;
 using WebMineSweeperGame.Models;
 
 namespace WebMineSweeperGame.Controllers
@@ -17,40 +18,36 @@ namespace WebMineSweeperGame.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private string apiBaseUrl;
+        private BaseApiClient _apiClient;
 
-        public HomeController(ILogger<HomeController> logger, IConfiguration configuration)
+        public HomeController(ILogger<HomeController> logger, BaseApiClient apiClient)
         {
             _logger = logger;
-            apiBaseUrl = configuration.GetValue<string>("WebAPIBaseUrl");
+            _apiClient = apiClient;
         }
 
         public async Task<IActionResult> IndexAsync()
         {
             IEnumerable<Game> allGames = null;
 
-            using (var client = new HttpClient())
+            var responseTask = _apiClient.SendAsync(HttpMethod.Get, "");
+            responseTask.Wait();
+
+            var result = responseTask.Result;
+            if (result.IsSuccessStatusCode)
             {
-                client.BaseAddress = new Uri(apiBaseUrl);
-                //HTTP GET
-                var responseTask = client.GetAsync("");
-                responseTask.Wait();
-
-                var result = responseTask.Result;
-                if (result.IsSuccessStatusCode)
-                {
-                    var jsonString = await result.Content.ReadAsStringAsync();
-                    allGames = JsonConvert.DeserializeObject<List<Game>>(jsonString);
-                }
-                else //web api sent error response 
-                {
-                    //log response status here..
-
-                    allGames = Enumerable.Empty<Game>();
-
-                    ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
-                }
+                var jsonString = await result.Content.ReadAsStringAsync();
+                allGames = JsonConvert.DeserializeObject<List<Game>>(jsonString);
             }
+            else //web api sent error response 
+            {
+                //log response status here..
+
+                allGames = Enumerable.Empty<Game>();
+
+                ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+            }
+
             return View("Index", allGames);
         }
 
@@ -58,25 +55,23 @@ namespace WebMineSweeperGame.Controllers
         public async Task<IActionResult> Play(string id)
         {
             var game = new Game();
-            using (var client = new HttpClient())
-            {
-                client.BaseAddress = new Uri(apiBaseUrl);
-                //HTTP GET
-                var responseTask = client.GetAsync($"GetGame/{id}");
-                responseTask.Wait();
+            var uriMethod = $"GetGame/{id}";
 
-                var result = responseTask.Result;
-                if (result.IsSuccessStatusCode)
-                {
-                    var jsonString = await result.Content.ReadAsStringAsync();
-                    game = JsonConvert.DeserializeObject<Game>(jsonString);
-                }
-                else //web api sent error response 
-                {
-                    //log response status here..
-                    ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
-                }
+            var responseTask = _apiClient.SendAsync(HttpMethod.Get, uriMethod);
+            responseTask.Wait();
+
+            var result = responseTask.Result;
+            if (result.IsSuccessStatusCode)
+            {
+                var jsonString = await result.Content.ReadAsStringAsync();
+                game = JsonConvert.DeserializeObject<Game>(jsonString);
             }
+            else //web api sent error response 
+            {
+                //log response status here..
+                ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+            }
+
             return View(game);
         }
 
@@ -84,28 +79,24 @@ namespace WebMineSweeperGame.Controllers
         public async Task<IActionResult> RevealCell(string gameId, int arrayPosition)
         {
             var game = new Game();
-            using (var client = new HttpClient())
+            var uriMethod = $"RevealCell/{gameId}";
+            var cell = new Cell() { ArrayPostion = arrayPosition };
+
+            var responseTask = _apiClient.SendAsync(HttpMethod.Put, uriMethod, cell);
+            responseTask.Wait();
+
+            var result = responseTask.Result;
+            if (result.IsSuccessStatusCode)
             {
-                client.BaseAddress = new Uri(apiBaseUrl);
-
-                var jsonParams = $"{{\"ArrayPostion\":{arrayPosition} }}";
-                var httpContent = new StringContent(jsonParams, Encoding.UTF8, "application/json");
-
-                var responseTask = client.PutAsync($"RevealCell/{gameId}", httpContent);
-                responseTask.Wait();
-
-                var result = responseTask.Result;
-                if (result.IsSuccessStatusCode)
-                {
-                    var jsonString = await result.Content.ReadAsStringAsync();
-                    game = JsonConvert.DeserializeObject<Game>(jsonString);
-                }
-                else //web api sent error response 
-                {
-                    //log response status here..
-                    ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
-                }
+                var jsonString = await result.Content.ReadAsStringAsync();
+                game = JsonConvert.DeserializeObject<Game>(jsonString);
             }
+            else //web api sent error response 
+            {
+                //log response status here..
+                ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+            }
+
             return PartialView("_PlayPartialView", game);
         }
 
@@ -113,25 +104,22 @@ namespace WebMineSweeperGame.Controllers
         public async Task<IActionResult> ResetGame(string gameId)
         {
             var game = new Game();
-            using (var client = new HttpClient())
+            var uriMethod = $"ResetGame/{gameId}";
+            var responseTask = _apiClient.SendAsync(HttpMethod.Get, uriMethod);
+            responseTask.Wait();
+
+            var result = responseTask.Result;
+            if (result.IsSuccessStatusCode)
             {
-                client.BaseAddress = new Uri(apiBaseUrl);
-
-                var responseTask = client.GetAsync($"ResetGame/{gameId}");
-                responseTask.Wait();
-
-                var result = responseTask.Result;
-                if (result.IsSuccessStatusCode)
-                {
-                    var jsonString = await result.Content.ReadAsStringAsync();
-                    game = JsonConvert.DeserializeObject<Game>(jsonString);
-                }
-                else //web api sent error response 
-                {
-                    //log response status here..
-                    ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
-                }
+                var jsonString = await result.Content.ReadAsStringAsync();
+                game = JsonConvert.DeserializeObject<Game>(jsonString);
             }
+            else //web api sent error response 
+            {
+                //log response status here..
+                ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+            }
+
             return View("Play", game);
         }
 
@@ -139,29 +127,24 @@ namespace WebMineSweeperGame.Controllers
         public async Task<IActionResult> MarkAsBomb(string gameId, int arrayPosition, bool markedAsBomb)
         {
             var game = new Game();
-            using (var client = new HttpClient())
+            var uriMethod = $"MarkCellAsBomb/{gameId}";
+            var cellParam = new Cell() { ArrayPostion = arrayPosition, MarkedAsBomb = markedAsBomb };
+
+            var responseTask = _apiClient.SendAsync(HttpMethod.Put, uriMethod, cellParam);
+            responseTask.Wait();
+
+            var result = responseTask.Result;
+            if (result.IsSuccessStatusCode)
             {
-                client.BaseAddress = new Uri(apiBaseUrl);
-
-                var cellParam = new Cell() { ArrayPostion = arrayPosition, MarkedAsBomb = markedAsBomb };
-                var jsonParams = JsonConvert.SerializeObject(cellParam);
-                var httpContent = new StringContent(jsonParams, Encoding.UTF8, "application/json");
-
-                var responseTask = client.PutAsync($"MarkCellAsBomb/{gameId}", httpContent);
-                responseTask.Wait();
-
-                var result = responseTask.Result;
-                if (result.IsSuccessStatusCode)
-                {
-                    var jsonString = await result.Content.ReadAsStringAsync();
-                    game = JsonConvert.DeserializeObject<Game>(jsonString);
-                }
-                else //web api sent error response 
-                {
-                    //log response status here..
-                    ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
-                }
+                var jsonString = await result.Content.ReadAsStringAsync();
+                game = JsonConvert.DeserializeObject<Game>(jsonString);
             }
+            else //web api sent error response 
+            {
+                //log response status here..
+                ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+            }
+
             return PartialView("_PlayPartialView", game);
         }
 
@@ -174,48 +157,39 @@ namespace WebMineSweeperGame.Controllers
         public async Task<IActionResult> Create(Game gameParam)
         {
             var game = new Game();
-            using (var client = new HttpClient())
+            var uriMethod = "NewGame";
+
+            var responseTask = _apiClient.SendAsync(HttpMethod.Post, uriMethod, gameParam);
+            responseTask.Wait();
+
+            var result = responseTask.Result;
+            if (result.IsSuccessStatusCode)
             {
-                client.BaseAddress = new Uri(apiBaseUrl);
-
-                var jsonParams = JsonConvert.SerializeObject(gameParam);
-                var httpContent = new StringContent(jsonParams, Encoding.UTF8, "application/json");
-
-                var responseTask = client.PostAsync("NewGame", httpContent);
-                responseTask.Wait();
-
-                var result = responseTask.Result;
-                if (result.IsSuccessStatusCode)
-                {
-                    var jsonString = await result.Content.ReadAsStringAsync();
-                    game = JsonConvert.DeserializeObject<Game>(jsonString);
-                }
-                else //web api sent error response 
-                {
-                    //log response status here..
-                    ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
-                    return View(gameParam);
-                }
+                var jsonString = await result.Content.ReadAsStringAsync();
+                game = JsonConvert.DeserializeObject<Game>(jsonString);
             }
+            else //web api sent error response 
+            {
+                //log response status here..
+                ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                return View(gameParam);
+            }
+
             return RedirectToAction("Play", new { id = game.Id });
         }
 
         [HttpGet, ActionName("Delete")]
         public async Task<IActionResult> Delete(string id)
         {
-            using (var client = new HttpClient())
+            var taskResult = await _apiClient.SendAsync(HttpMethod.Delete, $"DeleteGame/{id}");
+
+            if (!taskResult.IsSuccessStatusCode)
             {
-                client.BaseAddress = new Uri(apiBaseUrl);
-
-                var taskResult = await client.DeleteAsync($"DeleteGame/{id}");
-
-                if (!taskResult.IsSuccessStatusCode)                
-                {
-                    //log response status here..
-                    ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
-                    return View("Index");
-                }
+                //log response status here..
+                ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                return View("Index");
             }
+
             return RedirectToAction("Index");
         }
 
