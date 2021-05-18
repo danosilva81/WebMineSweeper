@@ -120,7 +120,7 @@ namespace WebMineSweeperGame.Controllers
                 ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
             }
 
-            return View("Play", game);
+            return RedirectToAction("Play", new { id = game.Id });
         }
 
         [HttpPost]
@@ -158,6 +158,13 @@ namespace WebMineSweeperGame.Controllers
         {
             var game = new Game();
             var uriMethod = "NewGame";
+
+            int gameDimension = gameParam.XDimension * gameParam.YDimension;
+
+            if (gameParam.NumberOfBombs > gameDimension) {
+                ModelState.AddModelError(string.Empty, $"The number of bombs should be less than the game dimension ({gameDimension}).");
+                return View(gameParam);
+            }
 
             var responseTask = _apiClient.SendAsync(HttpMethod.Post, uriMethod, gameParam);
             responseTask.Wait();
