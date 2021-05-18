@@ -17,6 +17,7 @@ namespace MineSweeperAPI.Models
 
         public Cell[] MineCellCollection { get; set; }
 
+        [Range(0, 10000, ErrorMessage = "The value must be greater than 0")]
         [Display(Name = "Number of Bombs")]
         public int NumberOfBombs { get; set; }
 
