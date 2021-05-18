@@ -65,7 +65,10 @@
 
             switch (event.which) {
                 case 1:
-                    ActionOverCell(model, "RevealCell");
+                    if ("@Model.GameIsWon" == "True")                     
+                        event.preventDefault();
+                    else
+                        ActionOverCell(model, "RevealCell");
                     break;
                 case 3:
                     model.markedAsBomb = !$(this).data("bomb-marked");
@@ -77,6 +80,12 @@
         $('.button-cell').contextmenu(function () {
             return false;
         });
+
+        @*if ("@Model.GameIsWon" == "True") {
+            $('a.button-cell').click(function (e) {
+                e.preventDefault();
+            });
+        }*@
     });
 
     function ActionOverCell(model, action) {
